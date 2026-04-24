@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Entrar | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html">Página Inicial</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="carrinho.html">Carrinho</a>
+        <a href="favoritos.html">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html">Minha Conta</a>
+        <a href="trocas-devolucoes.html">Trocas e devoluções</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <main class="pagina-auth">
+      <section class="painel-form">
+        <p class="tag">Área do cliente</p>
+        <h1>Entrar na sua conta</h1>
+        <p class="texto-suporte">Acompanhe pedidos, favoritos e dados salvos.</p>
+
+        <form class="form-grid" id="form-login">
+          <label for="email-login">E-mail</label>
+          <input id="email-login" type="email" placeholder="voce@email.com" />
+
+          <div class="form-linha-senha">
+            <div class="campo-senha-com-icone">
+              <label for="senha-login">Senha</label>
+              <div class="campo-senha-wrap">
+                <input id="senha-login" type="password" placeholder="Digite sua senha" autocomplete="current-password" />
+                <button
+                  type="button"
+                  class="btn-toggle-senha-olho"
+                  id="btn-toggle-senha-login"
+                  aria-label="Mostrar senha"
+                  title="Mostrar senha"
+                >
+                  <svg class="eh-olho-aberto" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <svg class="eh-olho-riscado" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-principal botao-full" id="btn-login">Entrar</button>
+        </form>
+        <p class="texto-suporte" id="login-feedback"></p>
+
+        <p class="texto-suporte">
+          Ainda não tem conta? <a href="criar-conta.html">Criar conta</a>
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+      <p>Atendimento de segunda a sábado.</p>
+    </footer>
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arquivo 01 | Curadoria e Brechó</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html" class="active">Página Inicial</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="carrinho.html">Carrinho</a>
+        <a href="favoritos.html">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html">Minha Conta</a>
+        <a href="trocas-devolucoes.html">Trocas e devoluções</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <div style="width: min(1180px, 92vw); margin: 0 auto; padding: 0 0 0.3rem" class="subnav-categorias-wrap">
+      <nav class="subnav-categorias" aria-label="Categorias">
+        <a href="catalogo.html">Todas as peças</a>
+        <a href="catalogo.html?categoria=Blusa">Blusas</a>
+        <a href="catalogo.html?categoria=Vestido">Vestidos</a>
+        <a href="catalogo.html?categoria=Calça">Calças</a>
+        <a href="catalogo.html?categoria=Acessório">Acessórios</a>
+      </nav>
+    </div>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="tag">Curadoria minimalista</p>
+          <h1>Peças com história, estilo e propósito.</h1>
+          <p>
+            O Arquivo 01 é um brechó de curadoria que reúne roupas e acessórios
+            selecionados para um guarda-roupa atemporal.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-principal" href="catalogo.html">Explorar catálogo</a>
+            <a class="btn" href="produto.html">Ver destaque</a>
+          </div>
+        </div>
+        <img
+          src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80"
+          alt="Look curado de moda"
+        />
+      </section>
+
+      <section>
+        <h2>Acabou de chegar</h2>
+        <div class="grid-produtos" id="novidades"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+      <p>Entrega para todo o Brasil.</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contato | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html">Página Inicial</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="carrinho.html">Carrinho</a>
+        <a href="favoritos.html">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html">Minha Conta</a>
+        <a href="trocas-devolucoes.html">Trocas e devoluções</a>
+        <a href="contato.html" class="active">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <main class="checkout-grid">
+      <section class="painel-form">
+        <p class="tag">Fale com a gente</p>
+        <h1>Contato</h1>
+        <p class="texto-suporte">
+          Tire dúvidas sobre peças, pedido, troca ou envio.
+        </p>
+
+        <form class="form-grid">
+          <label for="nome-contato">Nome</label>
+          <input id="nome-contato" type="text" placeholder="Seu nome" />
+
+          <label for="email-contato">E-mail</label>
+          <input id="email-contato" type="email" placeholder="voce@email.com" />
+
+          <label for="mensagem-contato">Mensagem</label>
+          <textarea
+            id="mensagem-contato"
+            rows="5"
+            placeholder="Escreva sua mensagem"
+          ></textarea>
+
+          <button type="button" class="btn btn-principal botao-full">Enviar mensagem</button>
+        </form>
+      </section>
+
+      <aside class="resumo">
+        <h2>Atendimento</h2>
+        <p><span>Canal principal</span><strong>E-mail</strong></p>
+        <p><span>E-mail</span><strong>contato@arquivo01.com</strong></p>
+        <p><span>WhatsApp</span><strong>em breve</strong></p>
+        <p><span>Horário</span><strong>Seg-Sáb, 10h às 18h</strong></p>
+        <p class="total"><span>Tempo médio de resposta</span><strong>até 2h</strong></p>
+      </aside>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+      <p>Atendimento humanizado para todo o Brasil.</p>
+    </footer>
+    <script src="script.js"></script>
+  </body>
+</html>

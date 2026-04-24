@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resultado do pagamento | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html">Página Inicial</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="carrinho.html">Carrinho</a>
+        <a href="favoritos.html">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html" class="active">Minha Conta</a>
+        <a href="trocas-devolucoes.html">Trocas e devoluções</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <main class="conteudo-simples" style="max-width: 640px; margin: 2rem auto; padding: 0 1.25rem">
+      <h1 id="mp-titulo">Obrigada pelo pedido</h1>
+      <p class="texto-suporte" id="mp-mensagem"></p>
+      <p id="mp-order" class="texto-suporte" style="margin-top: 0.5rem"></p>
+      <p style="margin-top: 1.5rem">
+        <a class="btn btn-principal" href="minha-conta.html">Ver meus pedidos</a>
+        <a class="btn" href="index.html" style="margin-left: 0.5rem">Página inicial</a>
+      </p>
+    </main>
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+    </footer>
+    <script src="script.js"></script>
+    <script>
+      (function () {
+        const p = new URLSearchParams(window.location.search);
+        const st = (p.get("status") || "").toLowerCase();
+        const oid = p.get("order_id");
+        const t = document.getElementById("mp-titulo");
+        const m = document.getElementById("mp-mensagem");
+        const o = document.getElementById("mp-order");
+        if (oid) o.textContent = "Pedido nº " + oid;
+        if (st === "success" || st === "approved") {
+          if (t) t.textContent = "Pagamento aprovado (ou em análise)";
+          if (m)
+            m.textContent =
+              "O Mercado Pago enviou a confirmação. O status do pedido é atualizado automaticamente; você também vê tudo em Minha Conta.";
+        } else if (st === "pending") {
+          if (t) t.textContent = "Pagamento pendente";
+          if (m)
+            m.textContent =
+              "Boleto ou Pix podem levar alguns minutos. Assim que o Mercado Pago confirmar, o status aparece em Minha Conta.";
+        } else if (st === "failure" || st === "rejected") {
+          if (t) t.textContent = "Não concluímos o pagamento";
+          if (m)
+            m.textContent = "Nada foi debitado. Você pode refazer o pedido pelo carrinho ou falar conosco em Contato.";
+        } else {
+          if (t) t.textContent = "Retorno do pagamento";
+          if (m) m.textContent = "Acompanhe o status do seu pedido em Minha Conta.";
+        }
+      })();
+    </script>
+  </body>
+</html>

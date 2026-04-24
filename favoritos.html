@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Favoritos | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html">Página Inicial</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="carrinho.html">Carrinho</a>
+        <a href="favoritos.html" class="active">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html">Minha Conta</a>
+        <a href="trocas-devolucoes.html">Trocas e devoluções</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <main>
+      <section class="catalogo-header">
+        <p class="tag">Sua curadoria</p>
+        <h1>Meus Favoritos</h1>
+        <p>
+          Aqui ficam as peças que você salvou para acompanhar e decidir com calma.
+        </p>
+      </section>
+
+      <p id="favoritos-vazio" class="texto-suporte">
+        Você ainda não favoritou nenhuma peça. Explore o
+        <a href="catalogo.html">catálogo</a>.
+      </p>
+      <section class="grid-produtos" id="lista-favoritos"></section>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+      <p>Peças com história esperando por você.</p>
+    </footer>
+    <script src="script.js"></script>
+  </body>
+</html>

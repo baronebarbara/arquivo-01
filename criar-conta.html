@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Criar Conta | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html">Página Inicial</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="carrinho.html">Carrinho</a>
+        <a href="favoritos.html">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html">Minha Conta</a>
+        <a href="trocas-devolucoes.html">Trocas e devoluções</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <main class="pagina-auth">
+      <section class="painel-form">
+        <p class="tag">Bem-vinda(o)</p>
+        <h1>Criar conta no Arquivo 01</h1>
+        <p class="texto-suporte">Cadastre-se com endereço de entrega e finalize compras com mais agilidade.</p>
+
+        <form class="form-grid" id="form-cadastro">
+          <label for="nome-cadastro">Nome completo</label>
+          <input id="nome-cadastro" type="text" placeholder="Seu nome" required />
+
+          <label for="email-cadastro">E-mail</label>
+          <input id="email-cadastro" type="email" placeholder="voce@email.com" required />
+
+          <div class="form-linha-senha">
+            <div class="campo-senha-com-icone">
+              <label for="senha-cadastro">Senha (mín. 6 caracteres)</label>
+              <div class="campo-senha-wrap">
+                <input id="senha-cadastro" type="password" required minlength="6" autocomplete="new-password" />
+                <button
+                  type="button"
+                  class="btn-toggle-senha-olho"
+                  id="btn-toggle-senha-1"
+                  aria-label="Mostrar senha"
+                  title="Mostrar senha"
+                >
+                  <svg class="eh-olho-aberto" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <svg class="eh-olho-riscado" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-linha-senha">
+            <div class="campo-senha-com-icone">
+              <label for="senha-cadastro-2">Confirmar senha</label>
+              <div class="campo-senha-wrap">
+                <input id="senha-cadastro-2" type="password" required minlength="6" autocomplete="new-password" />
+                <button
+                  type="button"
+                  class="btn-toggle-senha-olho"
+                  id="btn-toggle-senha-2"
+                  aria-label="Mostrar senha"
+                  title="Mostrar senha"
+                >
+                  <svg class="eh-olho-aberto" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <svg class="eh-olho-riscado" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <label for="telefone-cadastro">Telefone</label>
+          <input id="telefone-cadastro" type="tel" placeholder="(11) 99999-9999" />
+
+          <h3 class="subtitulo-form">Endereço de entrega</h3>
+          <p class="texto-suporte" style="margin: -0.3rem 0 0.5rem">
+            Digite o CEP e clique em buscar. Os campos da ViaCEP preenchem automaticamente. Complemento é opcional.
+          </p>
+
+          <label for="cep-cadastro">CEP</label>
+          <div class="form-linha-cep">
+            <input id="cep-cadastro" type="text" inputmode="numeric" maxlength="9" placeholder="00000-000" required />
+            <button type="button" class="btn" id="btn-buscar-cep">Buscar CEP</button>
+          </div>
+
+          <label for="logradouro-cadastro">Logradouro</label>
+          <input id="logradouro-cadastro" type="text" placeholder="Rua, avenida..." required />
+
+          <div class="form-duas-colunas">
+            <div>
+              <label for="numero-cadastro">Número</label>
+              <input id="numero-cadastro" type="text" placeholder="Número" required />
+            </div>
+            <div>
+              <label for="complemento-cadastro">Complemento (opcional)</label>
+              <input id="complemento-cadastro" type="text" placeholder="Apto, bloco, referência" />
+            </div>
+          </div>
+
+          <label for="bairro-cadastro">Bairro</label>
+          <input id="bairro-cadastro" type="text" required />
+
+          <div class="form-duas-colunas">
+            <div>
+              <label for="cidade-cadastro">Cidade</label>
+              <input id="cidade-cadastro" type="text" required />
+            </div>
+            <div>
+              <label for="uf-cadastro">UF</label>
+              <input id="uf-cadastro" type="text" maxlength="2" placeholder="SP" required />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-principal botao-full" id="btn-cadastro">Criar conta</button>
+        </form>
+        <p class="texto-suporte" id="cadastro-feedback"></p>
+
+        <p class="texto-suporte">Já possui cadastro? <a href="login.html">Entrar</a></p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+      <p>Cadastro seguro e rápido.</p>
+    </footer>
+    <script src="script.js"></script>
+  </body>
+</html>

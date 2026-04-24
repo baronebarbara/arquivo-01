@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catálogo | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html">Página Inicial</a>
+        <a href="catalogo.html" class="active">Catálogo</a>
+        <a href="carrinho.html">Carrinho</a>
+        <a href="favoritos.html">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html">Minha Conta</a>
+        <a href="trocas-devolucoes.html">Trocas e devoluções</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <main>
+      <section class="catalogo-header">
+        <h1>Catálogo de Produtos</h1>
+        <p>
+          Uma seleção autoral de peças vintage, contemporâneas e essenciais para
+          compor looks únicos.
+        </p>
+      </section>
+
+      <section class="filtros" id="filtros-categoria">
+        <button type="button" class="filtro ativo" data-cat="">Todos</button>
+        <button type="button" class="filtro" data-cat="Blusa">Blusas</button>
+        <button type="button" class="filtro" data-cat="Vestido">Vestidos</button>
+        <button type="button" class="filtro" data-cat="Calça">Calças</button>
+        <button type="button" class="filtro" data-cat="Blazer">Blazers</button>
+        <button type="button" class="filtro" data-cat="Suéter">Suéteres</button>
+        <button type="button" class="filtro" data-cat="Acessório">Acessórios</button>
+      </section>
+
+      <section class="filtros-avancados">
+        <label for="filtro-cor">Cor</label>
+        <select id="filtro-cor">
+          <option value="">Todas</option>
+        </select>
+        <label for="preco-min">Preço mín. (R$)</label>
+        <input id="preco-min" type="number" min="0" step="10" placeholder="0" />
+        <label for="preco-max">Preço máx. (R$)</label>
+        <input id="preco-max" type="number" min="0" step="10" placeholder="9999" />
+        <button type="button" class="btn" id="aplicar-filtros">Aplicar filtros</button>
+      </section>
+
+      <section class="grid-produtos" id="catalogo"></section>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+      <p>Moda circular feita com carinho.</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

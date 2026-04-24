@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trocas e devoluções | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html">Página Inicial</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="carrinho.html">Carrinho</a>
+        <a href="favoritos.html">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html">Minha Conta</a>
+        <a href="trocas-devolucoes.html" class="active">Trocas e devoluções</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <main>
+      <section class="catalogo-header">
+        <p class="tag">Política de consumo consciente</p>
+        <h1>Trocas e devoluções</h1>
+        <p>Transparência no brechó de curadoria: o que é possível, prazos e exceções.</p>
+      </section>
+
+      <section class="painel-form" style="max-width: 720px; margin: 0 auto 3rem">
+        <h2>Como o Arquivo 01 pensa trocas</h2>
+        <p class="texto-suporte" style="margin: 0.5rem 0 1.25rem">
+          Trabalhamos com <strong>peças de segunda mão, muitas vezes únicas</strong>, em ótima curadoria.
+          Isso muda o fluxo de troca em relação a e-commerce de produto novo: precisamos equilibrar
+          a sua confiança com a sustentabilidade do nosso pequeno estoque.
+        </p>
+        <h2>Prazo para desistência (compra remota / internet)</h2>
+        <p class="texto-suporte" style="margin: 0.5rem 0 1.25rem">
+          Em compras feitas fora de loja física, a legislação brasileira costuma assegurar
+          o direito de <strong>arrepender-se em até 7 dias corridos</strong> a partir do
+          recebimento do pedido, desde que a peça seja devolvida nas condições acordadas abaixo.
+          Confirme o calendário exato e o endereço de envio de devolução em contato (e-mail) ao
+          solicitar: <strong>contato@arquivo01.com</strong>
+        </p>
+        <h2>Condições da peça devolvida</h2>
+        <ul class="lista-info" style="list-style: disc; margin-left: 1.2rem; color: #2f2925">
+          <li>Peça <strong>sem uso</strong> (não lavada, sem odor, sem marcas de desgaste fora do anunciado).</li>
+          <li>Com <strong>etiquetas e identificação</strong> do pedido, quando houver.</li>
+          <li>Embalada de forma a evitar avarias no retorno. Fotos de embalagem podem ser pedidas em caso de dúvida.</li>
+        </ul>
+        <h2>Itens que geralmente não se enquadram em troca</h2>
+        <p class="texto-suporte" style="margin: 0.5rem 0 1.25rem">
+          Por natureza de brechó e venda de artigos únicos, pode não haver substituto com o
+          mesmo tamanho/cor. Ajustes finos, combinação com acessórios, ou dúvida de medidas são
+          resolvidos com <strong>fichas técnicas e fotos reais</strong> antes da compra — fale conosco
+          antes de finalizar, queremos te ajudar a acertar na primeira.
+        </p>
+        <h2>Defeito ou divergência do anunciado</h2>
+        <p class="texto-suporte" style="margin: 0.5rem 0 1.25rem">
+          Se a peça chegar com <strong>diferença relevante</strong> em relação à descrição
+          (estado, medidas, cor), entre em contato com fotos do item em mãos em até
+          <strong>48 horas após o recebimento</strong> para análise. Cada caso é tratado com
+          carinho, podendo resultar em reembolso, abatimento ou troca, conforme o estoque
+          disponível no Arquivo 01.
+        </p>
+        <h2>Estorno e frete de devolução</h2>
+        <p class="texto-suporte" style="margin: 0.5rem 0 1.25rem">
+          Quando a devolução for aceita por direito de arrependimento ou acordo, combinamos o
+          <strong>fluxo de reembolso</strong> (prazo e forma) por e-mail. O frete de retorno
+          pode, conforme a situação, ser por conta do cliente ou do Arquivo 01: isso fica
+          <strong>explícito na resposta</strong> da equipe, para não restar dúvida.
+        </p>
+        <p class="texto-suporte" style="margin-top: 1.5rem">
+          Em caso de dúvida, escreva para <a href="mailto:contato@arquivo01.com">contato@arquivo01.com</a> com o
+          assunto "Troca" ou "Devolução" e o número do pedido.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+      <p>Compra consciente, moda com história.</p>
+    </footer>
+    <script src="script.js"></script>
+  </body>
+</html>

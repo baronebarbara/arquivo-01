@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detalhes do Produto | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html">Página Inicial</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="produto.html" class="active">Detalhes do Produto</a>
+        <a href="carrinho.html">Carrinho</a>
+        <a href="favoritos.html">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html">Minha Conta</a>
+        <a href="trocas-devolucoes.html">Trocas e devoluções</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <p id="produto-nao-encontrado" class="texto-suporte" style="max-width: 720px; margin: 1.5rem auto 0; padding: 0 4vw" hidden></p>
+
+    <main class="produto-layout" id="produto-detalhe">
+      <section class="produto-galeria">
+        <img id="produto-img-1" src="" alt="" />
+        <img id="produto-img-2" src="" alt="" />
+        <img id="produto-img-3" src="" alt="" />
+      </section>
+
+      <section class="produto-info">
+        <p class="tag" id="produto-cor"></p>
+        <h1 id="produto-titulo">Carregando...</h1>
+        <p class="preco" id="produto-preco"></p>
+        <p class="descricao" id="produto-descricao"></p>
+
+        <label for="tamanho">Tamanho</label>
+        <select id="tamanho"></select>
+
+        <button class="btn botao-full" type="button" id="btn-favorito-produto" data-favorito="">
+          ♡ Favoritar peça
+        </button>
+        <button class="btn btn-principal botao-full" type="button" id="btn-add-cart" data-add-cart="">
+          Adicionar ao carrinho
+        </button>
+
+        <div class="produto-frete" style="margin-top: 1.1rem; padding-top: 1rem; border-top: 1px solid var(--line)">
+          <p class="texto-suporte" style="margin: 0 0 0.4rem; font-size: 0.92rem; font-weight: 600; color: var(--ink)">
+            Frete (estimativa)
+          </p>
+          <div class="form-linha-cep" style="margin-top: 0.35rem">
+            <input id="cep-frete-produto" type="text" inputmode="numeric" maxlength="9" placeholder="Seu CEP" />
+            <button type="button" class="btn" id="btn-frete-produto">Calcular</button>
+          </div>
+          <p class="texto-suporte" id="frete-produto-msg" style="margin: 0.4rem 0 0.3rem; font-size: 0.86rem"></p>
+          <div class="opcoes-frete" id="produto-frete-opcoes" style="display: none" aria-label="Entrega"></div>
+        </div>
+
+        <p class="texto-suporte" style="margin-top: 0.75rem">
+          <a href="catalogo.html">← Voltar ao catálogo</a>
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+      <p>Peças únicas com história.</p>
+    </footer>
+    <div id="lightbox-produto" class="lightbox" hidden>
+      <div class="lightbox-backdrop" data-lightbox-close></div>
+      <div class="lightbox-dialog" role="dialog" aria-modal="true" aria-label="Foto ampliada">
+        <button type="button" class="lightbox-close" data-lightbox-close aria-label="Fechar">×</button>
+        <button type="button" class="lightbox-nav lightbox-prev" aria-label="Foto anterior">‹</button>
+        <div class="lightbox-stage">
+          <img class="lightbox-foto" src="" alt="" />
+          <p class="lightbox-dica">Dois toques / duplo clique na foto para ampliar · <kbd>←</kbd> <kbd>→</kbd> · Esc fecha</p>
+        </div>
+        <button type="button" class="lightbox-nav lightbox-next" aria-label="Próxima foto">›</button>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

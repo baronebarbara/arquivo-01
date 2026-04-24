@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carrinho | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html">Página Inicial</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="carrinho.html" class="active">Carrinho</a>
+        <a href="favoritos.html">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html">Minha Conta</a>
+        <a href="trocas-devolucoes.html">Trocas e devoluções</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <main class="carrinho-layout">
+      <section class="itens-carrinho">
+        <h1>Seu Carrinho</h1>
+        <div id="lista-carrinho"></div>
+        <p class="texto-suporte" id="carrinho-vazio" hidden>
+          Seu carrinho está vazio. Veja nosso <a href="catalogo.html">catálogo</a>.
+        </p>
+      </section>
+
+      <aside class="resumo">
+        <h2>Resumo</h2>
+        <div class="cupom-box">
+          <label for="cupom-desconto">Cupom de desconto</label>
+          <div class="cupom-campo">
+            <input
+              id="cupom-desconto"
+              type="text"
+              placeholder="Ex: ARQUIVO10"
+              maxlength="20"
+            />
+            <button class="btn" type="button" id="aplicar-cupom">Aplicar</button>
+          </div>
+          <small id="cupom-resultado">Tem cupom? Aplique aqui.</small>
+        </div>
+
+        <div class="frete-box">
+          <label for="cep-frete">Calcular frete</label>
+          <div class="frete-campo">
+            <input id="cep-frete" type="text" placeholder="Digite seu CEP" maxlength="9" />
+            <button class="btn" type="button" id="calcular-frete">Calcular</button>
+          </div>
+          <small id="frete-resultado">Informe o CEP e escolha uma opção de entrega.</small>
+        </div>
+        <div class="opcoes-frete" id="carrinho-frete-opcoes" style="display: none" aria-label="Opções de frete"></div>
+        <p><span>Subtotal</span><strong id="valor-subtotal">R$ 0,00</strong></p>
+        <p><span>Desconto</span><strong id="valor-desconto">- R$ 0,00</strong></p>
+        <p><span>Frete</span><strong id="valor-frete">A definir</strong></p>
+        <p class="total"><span>Total</span><strong id="valor-total">R$ 0,00</strong></p>
+        <a class="btn btn-principal botao-full" href="checkout.html" id="btn-carrinho-checkout">Finalizar compra</a>
+      </aside>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+      <p>Compra segura e atendimento humanizado.</p>
+    </footer>
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <button
+        type="button"
+        class="btn-menu"
+        id="btn-menu-principal"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+        aria-controls="drawer-menu"
+      >
+        <span class="btn-menu__bars" aria-hidden="true"></span>
+      </button>
+      <nav class="nav-principal" aria-label="Navegação principal">
+        <a href="index.html">Página Inicial</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="carrinho.html">Carrinho</a>
+        <a href="favoritos.html">Favoritos <span class="contador-menu js-fav-count">0</span></a>
+        <a href="minha-conta.html">Minha Conta</a>
+        <a href="trocas-devolucoes.html">Trocas e devoluções</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </header>
+
+    <div class="drawer" id="drawer-menu" role="dialog" aria-modal="true" aria-label="Menu do site" hidden>
+      <div class="drawer__backdrop" data-close-drawer tabindex="-1"></div>
+      <div class="drawer__panel">
+        <div class="drawer__head">
+          <a href="index.html" class="drawer__brand">Arquivo 01</a>
+          <button type="button" class="drawer__close" data-close-drawer aria-label="Fechar menu">×</button>
+        </div>
+        <div class="drawer__body" id="drawer-nav-root"></div>
+      </div>
+    </div>
+
+    <main class="checkout-grid">
+      <section class="painel-form">
+        <p class="tag">Finalização segura</p>
+        <h1>Checkout</h1>
+        <p class="texto-suporte">Preencha os dados para concluir seu pedido.</p>
+
+        <form class="form-grid" id="form-checkout">
+          <h3 class="subtitulo-form" style="margin-top: 0">Endereço de entrega</h3>
+          <p class="texto-suporte" style="margin: -0.3rem 0 0.5rem">
+            Informe o CEP e busque (ou saia do campo com 8 dígitos). Ajuste número e complemento. Em seguida, escolha o frete.
+          </p>
+
+          <label for="cep-checkout">CEP</label>
+          <div class="form-linha-cep">
+            <input id="cep-checkout" type="text" inputmode="numeric" maxlength="9" placeholder="00000-000" />
+            <button type="button" class="btn" id="btn-cep-checkout">Buscar CEP</button>
+          </div>
+          <p class="texto-suporte" style="margin: -0.2rem 0 0.4rem; font-size: 0.88rem; grid-column: 1 / -1">
+            Preenche logradouro, bairro, cidade e UF (ViaCEP). Você informa o número e o complemento.
+          </p>
+
+          <label for="logradouro-checkout">Logradouro</label>
+          <input id="logradouro-checkout" type="text" placeholder="Rua, avenida..." />
+
+          <div class="form-duas-colunas">
+            <div>
+              <label for="numero-checkout">Número</label>
+              <input id="numero-checkout" type="text" placeholder="Número" inputmode="numeric" autocomplete="address-line2" />
+            </div>
+            <div>
+              <label for="complemento-checkout">Complemento (opcional)</label>
+              <input id="complemento-checkout" type="text" placeholder="Apto, bloco, referência" />
+            </div>
+          </div>
+
+          <label for="bairro-checkout">Bairro</label>
+          <input id="bairro-checkout" type="text" placeholder="Bairro" />
+
+          <div class="form-duas-colunas">
+            <div>
+              <label for="cidade-checkout">Cidade</label>
+              <input id="cidade-checkout" type="text" placeholder="Cidade" />
+            </div>
+            <div>
+              <label for="uf-checkout">UF</label>
+              <input id="uf-checkout" type="text" maxlength="2" placeholder="SP" style="text-transform: uppercase" />
+            </div>
+          </div>
+
+          <div
+            class="opcoes-frete"
+            id="checkout-frete-opcoes"
+            style="display: none; grid-column: 1 / -1"
+            aria-label="Opções de entrega"
+          ></div>
+          <p class="texto-suporte" id="checkout-frete-nota" style="display: none; margin-top: 0.2rem; font-size: 0.85rem; grid-column: 1 / -1">
+            Prazo e valor são <strong>estimativas</strong> (região do CEP). Com contrato, os Correios ou integradores (ex.: Melhor Envio) podem fornecer valores oficiais.
+          </p>
+
+          <label for="nome-checkout">Nome completo</label>
+          <input id="nome-checkout" type="text" placeholder="Seu nome" />
+
+          <label for="email-checkout">E-mail</label>
+          <input id="email-checkout" type="email" placeholder="voce@email.com" />
+
+          <label for="telefone-checkout">Telefone</label>
+          <input id="telefone-checkout" type="tel" placeholder="(11) 99999-9999" />
+
+          <label for="pagamento-checkout">Forma de pagamento</label>
+          <select id="pagamento-checkout" required>
+            <option value="Mercado Pago">Mercado Pago (Pix, cartão e boleto)</option>
+          </select>
+        <p class="texto-suporte" style="margin-top: -0.25rem; font-size: 0.9rem">
+          Você será redirecionada para a página segura do Mercado Pago para concluir o pagamento.
+        </p>
+        </form>
+        <p class="texto-suporte" id="checkout-feedback"></p>
+      </section>
+
+      <aside class="resumo">
+        <h2>Resumo do pedido</h2>
+        <div id="checkout-itens"></div>
+        <p><span>Subtotal</span><strong id="checkout-subtotal">R$ 0,00</strong></p>
+        <p><span>Desconto</span><strong id="checkout-desconto">- R$ 0,00</strong></p>
+        <p><span>Frete</span><strong id="checkout-frete">A definir</strong></p>
+        <p class="total"><span>Total</span><strong id="checkout-total">R$ 0,00</strong></p>
+        <button class="btn btn-principal botao-full" type="button" id="btn-finalizar-checkout" disabled>
+          Pagar agora
+        </button>
+        <p class="texto-suporte" id="checkout-aviso-frete" style="font-size: 0.86rem; margin-top: 0.5rem">
+          Informe o CEP (8 dígitos), busque ou saia do campo, depois escolha a entrega.
+        </p>
+      </aside>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Curadoria e Brechó</p>
+      <p>Pagamento seguro e proteção de dados.</p>
+    </footer>
+    <script src="script.js"></script>
+  </body>
+</html>
