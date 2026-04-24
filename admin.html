@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Admin — Peças | Arquivo 01</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .admin-wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 1.25rem 4vw 3rem;
+      }
+      .admin-wrap h1 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 1.75rem;
+        margin-bottom: 0.35rem;
+      }
+      .admin-keybox {
+        margin: 1rem 0 1.5rem;
+        padding: 1rem 1.1rem;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+      }
+      .admin-keybox label {
+        display: block;
+        margin-bottom: 0.35rem;
+      }
+      .admin-keybox input[type="password"],
+      .admin-keybox input[type="text"] {
+        width: 100%;
+        max-width: 100%;
+      }
+      .admin-form {
+        display: grid;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+      .admin-form .sub {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 1.1rem;
+        margin: 1rem 0 0.25rem;
+        grid-column: 1 / -1;
+      }
+      .admin-table-wrap {
+        margin-top: 2rem;
+        overflow-x: auto;
+      }
+      .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+      }
+      .admin-table th,
+      .admin-table td {
+        text-align: left;
+        padding: 0.45rem 0.35rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      .admin-table code {
+        font-size: 0.8rem;
+        word-break: break-all;
+      }
+      .admin-msg {
+        margin-top: 0.75rem;
+        font-size: 0.92rem;
+      }
+      .admin-msg--ok {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .admin-msg--err {
+        color: #9a3d3d;
+      }
+      .admin-hint {
+        font-size: 0.86rem;
+        color: var(--muted);
+        margin-top: 0.2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topo">
+      <a href="index.html" class="brand">Arquivo 01</a>
+      <a class="btn" href="index.html" style="margin-left: auto">← Voltar ao site</a>
+    </header>
+
+    <main class="admin-wrap">
+      <p class="tag">Uso interno</p>
+      <h1>Cadastrar peças</h1>
+      <p class="texto-suporte">
+        A chave vem da variável <code>ARQUIVO01_ADMIN_KEY</code> no Render (ou no <code>.env</code> local). Guarde o link
+        <code>admin.html</code> só para você.
+      </p>
+      <p class="texto-suporte" id="admin-aviso-servidor" style="display: none; color: #9a3d3d">
+        O servidor ainda não tem <code>ARQUIVO01_ADMIN_KEY</code> — defina no painel e faça deploy de novo.
+      </p>
+
+      <div class="admin-keybox">
+        <label for="admin-chave">Chave de administração</label>
+        <input id="admin-chave" type="password" autocomplete="current-password" placeholder="Cole a mesma chave do Render" />
+        <p class="admin-hint">Fica salva neste aparelho (navegador) ao cadastrar a primeira peça. Use HTTPS no ar.</p>
+        <button type="button" class="btn" id="admin-mostrar-chave" style="margin-top: 0.5rem">Mostrar / ocultar chave</button>
+      </div>
+
+      <h2 class="subtitulo-form" style="margin-top: 0">Nova peça</h2>
+      <form class="form-grid admin-form" id="form-nova-peca">
+        <span class="sub">Identificação</span>
+        <label for="peca-id">ID (slug) — letras minúsculas, números, hífen</label>
+        <input id="peca-id" required placeholder="ex.: vestido-linho-azul" pattern="[a-z0-9]+(-[a-z0-9]+)*" />
+        <p class="admin-hint">Não mude depois; é usado no link do produto.</p>
+
+        <label for="peca-nome">Nome</label>
+        <input id="peca-nome" required placeholder="Como aparece no site" />
+
+        <label for="peca-categoria">Categoria</label>
+        <input id="peca-categoria" required placeholder="Vestido, Blusa, Calça…" list="cats-admin" />
+        <datalist id="cats-admin">
+          <option value="Vestido"></option>
+          <option value="Blusa"></option>
+          <option value="Calça"></option>
+          <option value="Blazer"></option>
+          <option value="Suéter"></option>
+          <option value="Acessório"></option>
+        </datalist>
+
+        <span class="sub">Preço e fotos</span>
+        <label for="peca-preco">Preço (R$)</label>
+        <input id="peca-preco" inputmode="decimal" required placeholder="89,90" />
+
+        <label for="peca-url">URL da imagem (https)</label>
+        <input id="peca-url" type="url" required placeholder="https://…" />
+        <p class="admin-hint">Pode ser link direto (Cloudinary, etc.) ou arquivo no site, ex.: <code>/fotos/nome.jpg</code> (subir no Git e usar a URL completa do Render).</p>
+
+        <span class="sub">Detalhes</span>
+        <label for="peca-cor">Cor</label>
+        <input id="peca-cor" placeholder="Ex.: Azul marinho" />
+
+        <label for="peca-tams">Tamanhos (separados por vírgula)</label>
+        <input id="peca-tams" placeholder="P, M, G, GG ou 36, 38, 40" value="P,M,G,GG" />
+
+        <label for="peca-desc">Descrição</label>
+        <textarea id="peca-desc" rows="4" placeholder="Medidas, estado, combina com…"></textarea>
+
+        <button type="submit" class="btn btn-principal" style="margin-top: 0.5rem; grid-column: 1 / -1">Adicionar peça</button>
+        <p class="admin-msg" id="admin-form-msg" style="grid-column: 1 / -1" aria-live="polite"></p>
+      </form>
+
+      <h2 class="subtitulo-form" style="margin-top: 2rem">Peças no site</h2>
+      <p class="texto-suporte" id="admin-lista-vazia" style="display: none">Nenhuma peça ainda (ou ainda carregando).</p>
+      <div class="admin-table-wrap">
+        <table class="admin-table" id="admin-tabela" hidden>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Preço</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="admin-tbody"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <footer>
+      <p>Arquivo 01 - Admin</p>
+    </footer>
+
+    <script>
+      const SK = "arquivo01:adminKey";
+
+      function precoParaCentavos(str) {
+        const t = (str || "")
+          .replace("R$", "")
+          .replace(/\s/g, "")
+          .replace(/\./g, "")
+          .replace(",", ".")
+          .trim();
+        const n = parseFloat(t);
+        if (Number.isNaN(n) || n < 0) return null;
+        return Math.round(n * 100);
+      }
+
+      function getKey() {
+        const el = document.getElementById("admin-chave");
+        return (el && el.value) || sessionStorage.getItem(SK) || "";
+      }
+
+      function setMsgForm(text, isErr) {
+        const p = document.getElementById("admin-form-msg");
+        if (!p) return;
+        p.textContent = text || "";
+        p.className = "admin-msg " + (isErr ? "admin-msg--err" : "admin-msg--ok");
+      }
+
+      function api(path, options) {
+        const k = getKey();
+        return fetch(path, {
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Key": k,
+            ...(options && options.headers),
+          },
+          credentials: "include",
+        }).then((r) =>
+          r.json().then((d) => {
+            if (!r.ok) throw new Error(d.error || "Erro na requisição.");
+            return d;
+          })
+        );
+      }
+
+      function apiPublic(path) {
+        return fetch(path, { credentials: "include" }).then((r) => {
+          if (!r.ok) return r.json().then((d) => Promise.reject(new Error(d.error || "Erro.")));
+          return r.json();
+        });
+      }
+
+      function carregarLista() {
+        const tb = document.getElementById("admin-tbody");
+        const table = document.getElementById("admin-tabela");
+        const vazio = document.getElementById("admin-lista-vazia");
+        if (!tb) return;
+        apiPublic("/api/products")
+          .then((d) => {
+            const prods = d.products || [];
+            tb.innerHTML = "";
+            if (!prods.length) {
+              vazio.style.display = "block";
+              table.hidden = true;
+              return;
+            }
+            vazio.style.display = "none";
+            table.hidden = false;
+            prods.forEach((p) => {
+              const tr = document.createElement("tr");
+              tr.innerHTML =
+                "<td><code>" +
+                p.id +
+                "</code></td><td>" +
+                (p.nome || "").replace(/</g, "&lt;") +
+                "</td><td>" +
+                (p.preco || "") +
+                "</td><td><button type=\"button\" class=\"btn\" data-del=\"" +
+                p.id +
+                "\">Excluir</button></td>";
+              tb.appendChild(tr);
+            });
+            tb.querySelectorAll("[data-del]").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                const id = btn.getAttribute("data-del");
+                if (!id || !confirm("Remover a peça \"" + id + "\" do site?")) return;
+                if (!getKey().trim()) {
+                  alert("Preencha a chave de administração acima.");
+                  return;
+                }
+                api("/api/admin/products/" + encodeURIComponent(id), { method: "DELETE" })
+                  .then(() => {
+                    carregarLista();
+                    setMsgForm("Peça removida.", false);
+                  })
+                  .catch((e) => alert(e.message));
+              });
+            });
+          })
+          .catch(() => {
+            vazio.textContent = "Não foi possível carregar o catálogo.";
+            vazio.style.display = "block";
+          });
+      }
+
+      document.getElementById("admin-mostrar-chave")?.addEventListener("click", () => {
+        const el = document.getElementById("admin-chave");
+        if (el) el.type = el.type === "password" ? "text" : "password";
+      });
+
+      document.getElementById("form-nova-peca")?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        setMsgForm("", false);
+        const k = getKey();
+        if (!k.trim()) {
+          setMsgForm("Cole a chave de administração (a mesma do Render).", true);
+          return;
+        }
+        const id = (document.getElementById("peca-id").value || "").trim().toLowerCase();
+        const precoC = precoParaCentavos(document.getElementById("peca-preco").value);
+        if (precoC == null || precoC <= 0) {
+          setMsgForm("Preço inválido. Use ex.: 89,90", true);
+          return;
+        }
+        const imageUrl = (document.getElementById("peca-url").value || "").trim();
+        if (!/^https?:\/\//i.test(imageUrl) && !imageUrl.startsWith("/")) {
+          setMsgForm("A imagem precisa de URL completa (https://...) ou caminho a partir da raiz (/fotos/... com domínio no ar).", true);
+          return;
+        }
+        const absUrl = imageUrl.startsWith("/") ? window.location.origin + imageUrl : imageUrl;
+        const body = {
+          id,
+          name: (document.getElementById("peca-nome").value || "").trim(),
+          category: (document.getElementById("peca-categoria").value || "").trim(),
+          image_url: absUrl,
+          color: (document.getElementById("peca-cor").value || "").trim() || "—",
+          sizes: (document.getElementById("peca-tams").value || "P,M,G,GG").trim(),
+          description: (document.getElementById("peca-desc").value || "").trim(),
+          price_cents: precoC,
+        };
+        sessionStorage.setItem(SK, k);
+        api("/api/admin/products", { method: "POST", body: JSON.stringify(body) })
+          .then(() => {
+            setMsgForm("Peça adicionada. Já aparece no catálogo.");
+            e.target.reset();
+            document.getElementById("peca-tams").value = "P,M,G,GG";
+            carregarLista();
+          })
+          .catch((err) => setMsgForm(err.message || "Erro", true));
+      });
+
+      const ch = document.getElementById("admin-chave");
+      if (ch) {
+        ch.value = sessionStorage.getItem(SK) || "";
+        ch.addEventListener("change", () => sessionStorage.setItem(SK, ch.value));
+      }
+
+      fetch("/api/admin/status")
+        .then((r) => r.json())
+        .then((d) => {
+          if (d && d.admin_configured === false) {
+            const x = document.getElementById("admin-aviso-servidor");
+            if (x) x.style.display = "block";
+          }
+        })
+        .catch(() => {});
+
+      carregarLista();
+    </script>
+  </body>
+</html>

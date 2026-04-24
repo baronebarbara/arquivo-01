@@ -24,6 +24,15 @@ function formatarMoeda(valor) {
   return `R$ ${valor.toFixed(2).replace(".", ",")}`;
 }
 
+/** Link absoluto para páginas na raiz do site (evita 404 com href relativo em alguns fluxos). */
+function hrefPagina(nomeArquivo) {
+  try {
+    return new URL(nomeArquivo, `${window.location.origin}/`).href;
+  } catch {
+    return nomeArquivo;
+  }
+}
+
 function parsePreco(preco) {
   return Number((preco || "").replace("R$", "").replace(/\./g, "").replace(",", ".").trim()) || 0;
 }
@@ -311,7 +320,7 @@ function mostrarToasterCarrinho() {
     t.innerHTML = `
       <p>Peça adicionada ao carrinho.</p>
       <div class="toast-carrinho__acoes">
-        <a class="btn btn-principal toast-carrinho__btn" href="carrinho.html">Ver carrinho</a>
+        <a class="btn btn-principal toast-carrinho__btn" href="${hrefPagina("carrinho.html")}">Ver carrinho</a>
         <button type="button" class="btn toast-carrinho__btn" id="toast-carrinho-fechar">Continuar comprando</button>
       </div>
     `;
@@ -333,7 +342,7 @@ function inserirAtalhoCarrinhoNoTopo() {
   const a = document.createElement("a");
   a.id = "topo-carrinho";
   a.className = "topo-carrinho";
-  a.href = "carrinho.html";
+  a.href = hrefPagina("carrinho.html");
   a.setAttribute("aria-label", "Abrir carrinho de compras");
   a.innerHTML = `<span class="topo-carrinho__ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.5" fill="currentColor" stroke="none"/><path d="M3 4h2l1 10h12l2-7H6"/></svg></span><span class="contador-menu js-cart-count contador-menu--vazio">0</span>`;
   const menu = document.getElementById("btn-menu-principal");
@@ -1118,15 +1127,25 @@ function iniciarCheckout() {
         salvarCarrinho([]);
         salvarStorage(CHECKOUT_RESUMO_CHAVE, { ...RESUMO_FRETE_VAZIO });
         if (feedback) {
-          feedback.innerHTML = `${data.mercadopago_error} Pedido #${data.order_id} fica em <strong>aguardando pagamento</strong>. <a href="minha-conta.html">Abrir Minha Conta</a> ou tente de novo após configurar o Mercado Pago.`;
+          const mc = hrefPagina("minha-conta.html");
+          feedback.innerHTML = `${data.mercadopago_error} Pedido #${data.order_id} fica em <strong>aguardando pagamento</strong>. <a href="${mc}">Abrir Minha Conta</a> ou tente de novo após configurar o Mercado Pago no painel (variável <strong>MERCADOPAGO_ACCESS_TOKEN</strong> e, se o MP pedir, <strong>PUBLIC_BASE_URL</strong> com a URL do site).`;
         }
+        return;
+      }
+      if (data.mercadopago && !urlMp) {
+        if (feedback) {
+          const mc = hrefPagina("minha-conta.html");
+          feedback.innerHTML = `Pedido #${data.order_id} criado, mas o Mercado Pago não devolveu o link (init_point). Confira o token, <strong>MERCADOPAGO_SANDBOX</strong> (1 = teste) e <a href="${mc}">Minha Conta</a>.`;
+        }
+        salvarCarrinho([]);
+        salvarStorage(CHECKOUT_RESUMO_CHAVE, { ...RESUMO_FRETE_VAZIO });
         return;
       }
       if (feedback) feedback.textContent = `Pedido #${data.order_id} registrado. Acompanhe em Minha Conta.`;
       salvarCarrinho([]);
       salvarStorage(CHECKOUT_RESUMO_CHAVE, { ...RESUMO_FRETE_VAZIO });
       window.setTimeout(() => {
-        window.location.href = "minha-conta.html";
+        window.location.href = hrefPagina("minha-conta.html");
       }, 1200);
     } catch (error) {
       if (feedback) feedback.textContent = error.message;
@@ -1217,8 +1236,6 @@ function iniciarLightboxGaleria(containerSelector) {
   document.addEventListener("keydown", (e) => {
     if (box.hidden) return;
     if (e.key === "Escape") fechar();
-    if (e.key === "ArrowRight") prox();
-    if (e.key === "ArrowLeft") ant();
   });
 }
 
@@ -1377,32 +1394,52 @@ async function iniciarAutenticacao() {
 
   const listaPedidos = document.getElementById("lista-pedidos");
   const btnHistorico = document.getElementById("btn-historico-pedidos");
+  const msgHistorico = document.getElementById("pedidos-historico-msg");
+
+  if (btnHistorico && !btnHistorico.dataset.pedidoHistBound) {
+    btnHistorico.dataset.pedidoHistBound = "1";
+    btnHistorico.addEventListener("click", async () => {
+      const rótulo = btnHistorico.textContent;
+      btnHistorico.disabled = true;
+      btnHistorico.textContent = "Carregando…";
+      if (msgHistorico) {
+        msgHistorico.style.display = "none";
+        msgHistorico.textContent = "";
+      }
+      try {
+        const full = await apiFetch("/api/orders?limit=100");
+        if (listaPedidos) renderLinhasPedidos(full.orders, listaPedidos);
+        const n = full.orders?.length ?? 0;
+        if (msgHistorico) {
+          msgHistorico.textContent = n ? `Exibindo ${n} pedido(s) (até 100).` : "Nenhum pedido no histórico.";
+          msgHistorico.style.display = "block";
+        }
+        btnHistorico.textContent = "Atualizar histórico";
+        document.getElementById("secao-pedidos")?.scrollIntoView({ behavior: "smooth" });
+      } catch (e) {
+        btnHistorico.textContent = rótulo;
+        if (msgHistorico) {
+          msgHistorico.textContent = e.message || "Não foi possível carregar o histórico.";
+          msgHistorico.style.display = "block";
+        } else {
+          alert(e.message || "Não foi possível carregar o histórico.");
+        }
+      } finally {
+        btnHistorico.disabled = false;
+      }
+    });
+  }
+
   if (listaPedidos) {
     try {
       const data = await apiFetch("/api/orders?limit=20");
       renderLinhasPedidos(data.orders, listaPedidos);
       if (btnHistorico) {
-        const tem = data.orders?.length > 0;
+        const tem = (data.orders?.length ?? 0) > 0;
         btnHistorico.style.display = tem ? "inline-block" : "none";
-        btnHistorico.addEventListener("click", async () => {
-          const rótulo = btnHistorico.textContent;
-          btnHistorico.disabled = true;
-          btnHistorico.textContent = "Carregando…";
-          try {
-            const full = await apiFetch("/api/orders?limit=100");
-            renderLinhasPedidos(full.orders, listaPedidos);
-            btnHistorico.textContent = "Atualizar histórico";
-            document.getElementById("secao-pedidos")?.scrollIntoView({ behavior: "smooth" });
-          } catch (e) {
-            btnHistorico.textContent = rótulo;
-            alert(e.message || "Não foi possível carregar o histórico.");
-          } finally {
-            btnHistorico.disabled = false;
-          }
-        });
       }
-    } catch {
-      listaPedidos.innerHTML = "<li>Faça login para ver seus pedidos.</li>";
+    } catch (err) {
+      listaPedidos.innerHTML = `<li>Não foi possível carregar os pedidos. ${(err && err.message) || "Tente atualizar a página ou entrar de novo."}</li>`;
       if (btnHistorico) btnHistorico.style.display = "none";
     }
   }

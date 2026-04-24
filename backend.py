@@ -1,5 +1,7 @@
 import json
+import logging
 import os
+import re
 import smtplib
 import sqlite3
 from email.message import EmailMessage
@@ -12,6 +14,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "arquivo01.db")
+log = logging.getLogger("arquivo01")
 
 app = Flask(__name__, static_folder=BASE_DIR, static_url_path="")
 app.secret_key = os.environ.get("ARQUIVO01_SECRET", "arquivo01-dev-secret")
@@ -278,6 +281,20 @@ def _sync_product_metadata(conn):
     conn.commit()
 
 
+def _require_admin():
+    expected = (os.environ.get("ARQUIVO01_ADMIN_KEY", "") or "").strip()
+    if not expected:
+        return (jsonify({"error": "Admin desativado: defina a variável ARQUIVO01_ADMIN_KEY no servidor."}), 503)
+    got = (request.headers.get("X-Admin-Key") or "").strip()
+    if got != expected:
+        return (jsonify({"error": "Chave de administração inválida."}), 401)
+    return None
+
+
+def _product_id_ok(pid):
+    return bool(re.match(r"^[a-z0-9]+(?:-[a-z0-9]+)*$", pid)) and len(pid) <= 80
+
+
 def product_row_to_api(row):
     tamanhos_str = (row["sizes"] or "P,M,G,GG")
     tamanhos = [s.strip() for s in tamanhos_str.split(",") if s.strip()]
@@ -316,32 +333,82 @@ def user_to_dict(row):
     return d
 
 
-def send_welcome_email(to_addr, name):
-    host = os.environ.get("SMTP_HOST", "").strip()
+def _smtp_send_message(msg: EmailMessage) -> bool:
+    host = (os.environ.get("SMTP_HOST") or "").strip()
     if not host:
-        return
+        log.warning("E-mail desativado: defina SMTP_HOST (ex.: no Render, Environment).")
+        return False
+    port = int(os.environ.get("SMTP_PORT", "587") or 587)
+    use_ssl = (os.environ.get("SMTP_SSL", "") or "").strip().lower() in ("1", "true", "yes")
+    smtp_user = (os.environ.get("SMTP_USER") or "").strip()
+    smtp_pass = (os.environ.get("SMTP_PASS") or "").strip()
     try:
-        port = int(os.environ.get("SMTP_PORT", "587"))
-        smtp_user = os.environ.get("SMTP_USER", "")
-        smtp_pass = os.environ.get("SMTP_PASS", "")
-        from_addr = os.environ.get("SMTP_FROM", smtp_user)
-        msg = EmailMessage()
-        msg["Subject"] = "Bem-vinda(o) ao Arquivo 01"
-        msg["From"] = from_addr
-        msg["To"] = to_addr
-        msg.set_content(
-            f"Ola, {name}.\n\n"
-            f"Sua conta no Arquivo 01 foi criada com sucesso.\n\n"
-            f"Obrigada por fazer parte da nossa curadoria.\n"
-            f"Equipe Arquivo 01"
-        )
-        with smtplib.SMTP(host, port) as s:
-            s.starttls()
-            if smtp_user and smtp_pass:
-                s.login(smtp_user, smtp_pass)
-            s.send_message(msg)
-    except (OSError, smtplib.SMTPException):
-        pass
+        if use_ssl:
+            with smtplib.SMTP_SSL(host, port, timeout=30) as s:
+                if smtp_user and smtp_pass:
+                    s.login(smtp_user, smtp_pass)
+                s.send_message(msg)
+        else:
+            with smtplib.SMTP(host, port, timeout=30) as s:
+                s.starttls()
+                if smtp_user and smtp_pass:
+                    s.login(smtp_user, smtp_pass)
+                s.send_message(msg)
+        return True
+    except (OSError, smtplib.SMTPException) as e:
+        log.warning("Falha ao enviar e-mail (SMTP): %s", e)
+        return False
+
+
+def send_welcome_email(to_addr, name):
+    if not (os.environ.get("SMTP_HOST") or "").strip():
+        return
+    smtp_user = (os.environ.get("SMTP_USER") or "").strip()
+    from_addr = (os.environ.get("SMTP_FROM") or smtp_user).strip()
+    if not from_addr:
+        log.warning("Defina SMTP_FROM ou SMTP_USER para enviar o e-mail de boas-vindas.")
+        return
+    msg = EmailMessage()
+    msg["Subject"] = "Bem-vinda(o) ao Arquivo 01"
+    msg["From"] = from_addr
+    msg["To"] = to_addr
+    bcc = (os.environ.get("SMTP_BCC") or "").strip()
+    if bcc:
+        msg["Bcc"] = bcc
+    msg.set_content(
+        f"Ola, {name}.\n\n"
+        f"Sua conta no Arquivo 01 foi criada com sucesso.\n\n"
+        f"Obrigada por fazer parte da nossa curadoria.\n"
+        f"Equipe Arquivo 01"
+    )
+    _smtp_send_message(msg)
+
+
+def send_order_confirmation_email(to_addr, customer_name, order_id, total_label, itens_resumo: str):
+    if not (os.environ.get("SMTP_HOST") or "").strip():
+        return
+    smtp_user = (os.environ.get("SMTP_USER") or "").strip()
+    from_addr = (os.environ.get("SMTP_FROM") or smtp_user).strip()
+    if not from_addr:
+        return
+    oid = int(order_id)
+    msg = EmailMessage()
+    msg["Subject"] = f"Arquivo 01 - Pedido A01-{oid:04d} registrado"
+    msg["From"] = from_addr
+    msg["To"] = to_addr
+    bcc = (os.environ.get("SMTP_BCC") or "").strip()
+    if bcc:
+        msg["Bcc"] = bcc
+    corpo = (
+        f"Ola, {customer_name}.\n\n"
+        f"Seu pedido nº A01-{oid:04d} foi registrado (total {total_label}).\n\n"
+        f"Itens:\n{itens_resumo or '(ver site)'}\n\n"
+        f"O pagamento segue o fluxo do checkout (Mercado Pago). Voce tambem pode acompanhar o status em Minha Conta no site.\n\n"
+        f"Obrigada pela preferencia.\n"
+        f"Arquivo 01 - Curadoria e Brecho"
+    )
+    msg.set_content(corpo)
+    _smtp_send_message(msg)
 
 
 def parse_brl_to_cents(valor):
@@ -575,6 +642,89 @@ def get_product(product_id):
     return jsonify({"product": product_row_to_api(row)})
 
 
+@app.get("/api/admin/status")
+def admin_status():
+    return jsonify(
+        {
+            "admin_configured": bool((os.environ.get("ARQUIVO01_ADMIN_KEY", "") or "").strip()),
+        }
+    )
+
+
+@app.post("/api/admin/products")
+def admin_create_product():
+    err = _require_admin()
+    if err:
+        return err
+    payload = request.get_json(silent=True) or {}
+    pid = (payload.get("id") or "").strip().lower()
+    name = (payload.get("name") or "").strip()
+    category = (payload.get("category") or "").strip()
+    image_url = (payload.get("image_url") or "").strip()
+    color = (payload.get("color") or "—").strip() or "—"
+    sizes = (payload.get("sizes") or "P,M,G,GG").strip()
+    description = (payload.get("description") or "").strip()
+
+    if not _product_id_ok(pid):
+        return jsonify(
+            {
+                "error": "ID inválido. Use só letras minúsculas, números e hífens (ex.: vestido-floral-01).",
+            }
+        ), 400
+    if not name or not category or not image_url:
+        return jsonify({"error": "Preencha nome, categoria e URL da imagem."}), 400
+    if not image_url.startswith("http://") and not image_url.startswith("https://"):
+        return jsonify({"error": "A imagem precisa de uma URL http(s) pública."}), 400
+
+    price_cents = payload.get("price_cents")
+    if price_cents is not None:
+        try:
+            price_cents = int(price_cents)
+        except (TypeError, ValueError):
+            return jsonify({"error": "Preço (centavos) inválido."}), 400
+    else:
+        price_cents = parse_brl_to_cents(payload.get("price_brl") or "0")
+    if price_cents <= 0:
+        return jsonify({"error": "Informe um preço maior que zero."}), 400
+
+    now = datetime.utcnow().isoformat()
+    conn = get_db()
+    try:
+        if conn.execute("SELECT 1 FROM products WHERE id = ?", (pid,)).fetchone():
+            return jsonify({"error": "Já existe uma peça com este ID. Use outro slug."}), 409
+        conn.execute(
+            """
+            INSERT INTO products
+            (id, name, category, price_cents, image_url, color, sizes, description, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (pid, name, category, price_cents, image_url, color, sizes, description, now),
+        )
+        _sync_product_metadata(conn)
+        conn.commit()
+    finally:
+        conn.close()
+    return jsonify({"ok": True, "id": pid})
+
+
+@app.delete("/api/admin/products/<product_id>")
+def admin_delete_product(product_id):
+    err = _require_admin()
+    if err:
+        return err
+    pid = (product_id or "").strip()
+    if not pid:
+        return jsonify({"error": "ID inválido."}), 400
+    conn = get_db()
+    cur = conn.execute("DELETE FROM products WHERE id = ?", (pid,))
+    conn.commit()
+    n = cur.rowcount
+    conn.close()
+    if n == 0:
+        return jsonify({"error": "Peça não encontrada."}), 404
+    return jsonify({"ok": True})
+
+
 @app.get("/api/cep/<cep_raw>")
 def buscar_cep(cep_raw):
     cep = "".join(c for c in cep_raw or "" if c.isdigit())
@@ -715,6 +865,20 @@ def create_order():
             ),
         )
     conn.commit()
+
+    tot_label = f"R$ {total_cents / 100:.2f}".replace(".", ",")
+    linhas_itens = []
+    for it in items:
+        q = int(it.get("quantidade") or 1)
+        nm = (it.get("nome") or "?")[:200]
+        linhas_itens.append(f"  - {nm} x{q}")
+    send_order_confirmation_email(
+        customer_email,
+        customer_name,
+        order_id,
+        tot_label,
+        "\n".join(linhas_itens) if linhas_itens else "",
+    )
 
     mp_err = None
     pref, mp_err = mercado_pago_criar_preferencia(
