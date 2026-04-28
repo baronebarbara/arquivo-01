@@ -183,7 +183,16 @@ function atualizarTextoBotaoFavorito(botao, ativo) {
 
 function opcoesTamanhoSelect(produto) {
   const tams = Array.isArray(produto.tamanhos) && produto.tamanhos.length ? produto.tamanhos : ["Único"];
-  return tams.map((t) => `<option value="${t}">${t}</option>`).join("");
+  const estoque = produto.estoque_por_tamanho || {};
+  return tams
+    .map((t) => {
+      const q = Number(estoque[t]);
+      const temControle = Object.prototype.hasOwnProperty.call(estoque, t);
+      const esgotado = temControle && q <= 0;
+      const rotulo = esgotado ? `${t} (esgotado)` : t;
+      return `<option value="${t}" ${esgotado ? "disabled" : ""}>${rotulo}</option>`;
+    })
+    .join("");
 }
 
 function criarCardLista(produto) {
@@ -289,6 +298,11 @@ function adicionarAoCarrinho(produtoId, tamanho) {
   const produto = produtos.find((item) => item.id === produtoId);
   if (!produto) return;
   const tam = tamanho || "Único";
+  const estoque = produto.estoque_por_tamanho || {};
+  if (Object.prototype.hasOwnProperty.call(estoque, tam) && Number(estoque[tam]) <= 0) {
+    alert(`Tamanho ${tam} indisponível para esta peça.`);
+    return;
+  }
   const carrinho = lerCarrinho();
   const idx = carrinho.findIndex((item) => item.id === produtoId && (item.tamanho || "Único") === tam);
   if (idx >= 0) carrinho[idx].quantidade += 1;

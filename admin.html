@@ -147,6 +147,10 @@
         <label for="peca-tams">Tamanhos (separados por vírgula)</label>
         <input id="peca-tams" placeholder="P, M, G, GG ou 36, 38, 40" value="P,M,G,GG" />
 
+        <label for="peca-estoque">Estoque por tamanho</label>
+        <input id="peca-estoque" placeholder="Ex.: P:2, M:1, G:0" value="P:1,M:1,G:1,GG:1" />
+        <p class="admin-hint">Formato tamanho:quantidade. Use 0 para tamanho sem estoque.</p>
+
         <label for="peca-desc">Descrição</label>
         <textarea id="peca-desc" rows="4" placeholder="Medidas, estado, combina com…"></textarea>
 
@@ -163,6 +167,8 @@
               <th>ID</th>
               <th>Nome</th>
               <th>Preço</th>
+              <th>Status</th>
+              <th>Estoque</th>
               <th></th>
             </tr>
           </thead>
@@ -323,6 +329,7 @@
           image_urls: imageUrls,
           color: (document.getElementById("peca-cor").value || "").trim() || "—",
           sizes: (document.getElementById("peca-tams").value || "P,M,G,GG").trim(),
+          stock_by_size: (document.getElementById("peca-estoque").value || "").trim(),
           description: (document.getElementById("peca-desc").value || "").trim(),
           price_cents: precoC,
         };
@@ -332,6 +339,7 @@
             setMsgForm("Peça adicionada. Já aparece no catálogo.");
             e.target.reset();
             document.getElementById("peca-tams").value = "P,M,G,GG";
+            document.getElementById("peca-estoque").value = "P:1,M:1,G:1,GG:1";
             carregarLista();
           })
           .catch((err) => setMsgForm(err.message || "Erro", true));

@@ -5,7 +5,7 @@ import re
 import smtplib
 import sqlite3
 from email.message import EmailMessage
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -58,9 +58,15 @@ def _ensure_columns(conn):
         ("sizes", "ALTER TABLE products ADD COLUMN sizes TEXT"),
         ("description", "ALTER TABLE products ADD COLUMN description TEXT"),
         ("image_urls", "ALTER TABLE products ADD COLUMN image_urls TEXT"),
+        ("availability", "ALTER TABLE products ADD COLUMN availability TEXT DEFAULT 'disponivel'"),
+        ("reserved_order_id", "ALTER TABLE products ADD COLUMN reserved_order_id INTEGER"),
+        ("reserved_until", "ALTER TABLE products ADD COLUMN reserved_until TEXT"),
+        ("stock_by_size", "ALTER TABLE products ADD COLUMN stock_by_size TEXT"),
     ]:
         if name not in pc:
             conn.execute(sql)
+
+    conn.execute("UPDATE products SET availability = 'disponivel' WHERE availability IS NULL OR availability = ''")
 
     oc = table_columns("order_items")
     if "size_text" not in oc:
@@ -105,6 +111,10 @@ def init_db():
             price_cents INTEGER NOT NULL,
             image_url TEXT NOT NULL,
             image_urls TEXT,
+            availability TEXT NOT NULL DEFAULT "disponivel",
+            reserved_order_id INTEGER,
+            reserved_until TEXT,
+            stock_by_size TEXT,
             color TEXT,
             sizes TEXT,
             description TEXT,
@@ -297,6 +307,67 @@ def _product_id_ok(pid):
     return bool(re.match(r"^[a-z0-9]+(?:-[a-z0-9]+)*$", pid)) and len(pid) <= 80
 
 
+def parse_stock_by_size(raw, default_sizes=""):
+    if isinstance(raw, dict):
+        src = raw
+    elif isinstance(raw, str) and raw.strip():
+        t = raw.strip()
+        try:
+            j = json.loads(t)
+            src = j if isinstance(j, dict) else {}
+        except (json.JSONDecodeError, ValueError, TypeError):
+            src = {}
+            for part in t.split(","):
+                if ":" not in part:
+                    continue
+                k, v = part.split(":", 1)
+                src[k.strip()] = v.strip()
+    else:
+        src = {}
+
+    out = {}
+    for k, v in src.items():
+        kk = str(k).strip()
+        if not kk:
+            continue
+        try:
+            q = int(v)
+        except (TypeError, ValueError):
+            q = 0
+        out[kk] = max(0, q)
+
+    if not out and default_sizes:
+        for sz in [x.strip() for x in str(default_sizes).split(",") if x.strip()]:
+            out[sz] = 1
+    return out
+
+
+def stock_total(stock_map):
+    return sum(max(0, int(v)) for v in (stock_map or {}).values())
+
+
+def apply_product_availability_by_stock(conn, product_id, stock_map):
+    total = stock_total(stock_map)
+    if total <= 0:
+        conn.execute(
+            """
+            UPDATE products
+            SET availability = 'vendido', reserved_order_id = NULL, reserved_until = NULL
+            WHERE id = ?
+            """,
+            (product_id,),
+        )
+    else:
+        conn.execute(
+            """
+            UPDATE products
+            SET availability = 'disponivel', reserved_order_id = NULL, reserved_until = NULL
+            WHERE id = ?
+            """,
+            (product_id,),
+        )
+
+
 def product_row_to_api(row):
     tamanhos_str = (row["sizes"] or "P,M,G,GG")
     tamanhos = [s.strip() for s in tamanhos_str.split(",") if s.strip()]
@@ -314,6 +385,9 @@ def product_row_to_api(row):
     if not imagens and img:
         imagens = [img]
 
+    raw_stock = row["stock_by_size"] if "stock_by_size" in row.keys() else None
+    estoque = parse_stock_by_size(raw_stock, tamanhos_str)
+
     return {
         "id": row["id"],
         "nome": row["name"],
@@ -324,7 +398,67 @@ def product_row_to_api(row):
         "cor": row["color"] or "—",
         "tamanhos": tamanhos,
         "descricao": row["description"] or "",
+        "disponibilidade": row["availability"] if "availability" in row.keys() and row["availability"] else "disponivel",
+        "estoque_por_tamanho": estoque,
     }
+
+
+def reservation_minutes():
+    try:
+        mins = int((os.environ.get("RESERVA_PAGAMENTO_MINUTOS") or "30").strip())
+    except (TypeError, ValueError, AttributeError):
+        mins = 30
+    return max(5, min(mins, 24 * 60))
+
+
+def liberar_reservas_expiradas(conn):
+    limite = (datetime.utcnow() - timedelta(minutes=reservation_minutes())).isoformat()
+    exp = conn.execute(
+        """
+        SELECT id FROM orders
+        WHERE status = 'aguardando_pagamento' AND created_at <= ?
+        """,
+        (limite,),
+    ).fetchall()
+    if not exp:
+        return 0
+    ids = [int(r["id"]) for r in exp]
+    for oid in ids:
+        conn.execute("UPDATE orders SET status = 'cancelado' WHERE id = ? AND status = 'aguardando_pagamento'", (oid,))
+
+        itens = conn.execute(
+            "SELECT product_id, quantity, size_text FROM order_items WHERE order_id = ?",
+            (oid,),
+        ).fetchall()
+        for it in itens:
+            pid = str(it["product_id"] or "").strip()
+            qty = int(it["quantity"] or 0)
+            size = str(it["size_text"] or "").strip()
+            if not pid or qty <= 0 or not size:
+                continue
+            prow = conn.execute("SELECT stock_by_size, sizes FROM products WHERE id = ?", (pid,)).fetchone()
+            if not prow:
+                continue
+            stock_map = parse_stock_by_size(prow["stock_by_size"], prow["sizes"] or "")
+            stock_map[size] = max(0, int(stock_map.get(size, 0))) + qty
+            conn.execute(
+                "UPDATE products SET stock_by_size = ? WHERE id = ?",
+                (json.dumps(stock_map, ensure_ascii=False), pid),
+            )
+            apply_product_availability_by_stock(conn, pid, stock_map)
+
+        conn.execute(
+            """
+            UPDATE products
+            SET availability = 'disponivel',
+                reserved_order_id = NULL,
+                reserved_until = NULL
+            WHERE reserved_order_id = ? AND availability = 'reservado'
+            """,
+            (oid,),
+        )
+    conn.commit()
+    return len(ids)
 
 
 def user_to_dict(row):
@@ -542,6 +676,16 @@ def mercado_pago_sincronizar_pagamento(payment_id):
         """,
         (pid, oid),
     )
+    conn.execute(
+        """
+        UPDATE products
+        SET availability = 'vendido',
+            reserved_order_id = NULL,
+            reserved_until = NULL
+        WHERE reserved_order_id = ?
+        """,
+        (oid,),
+    )
     conn.commit()
     conn.close()
 
@@ -642,7 +786,8 @@ def me():
 @app.get("/api/products")
 def list_products():
     conn = get_db()
-    rows = conn.execute("SELECT * FROM products ORDER BY created_at DESC").fetchall()
+    liberar_reservas_expiradas(conn)
+    rows = conn.execute("SELECT * FROM products WHERE availability = 'disponivel' ORDER BY created_at DESC").fetchall()
     conn.close()
     return jsonify({"products": [product_row_to_api(row) for row in rows]})
 
@@ -650,10 +795,11 @@ def list_products():
 @app.get("/api/product/<product_id>")
 def get_product(product_id):
     conn = get_db()
-    row = conn.execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
+    liberar_reservas_expiradas(conn)
+    row = conn.execute("SELECT * FROM products WHERE id = ? AND availability = 'disponivel'", (product_id,)).fetchone()
     conn.close()
     if not row:
-        return jsonify({"error": "Peça não encontrada."}), 404
+        return jsonify({"error": "Peça não encontrada ou indisponível."}), 404
     return jsonify({"product": product_row_to_api(row)})
 
 
@@ -664,6 +810,18 @@ def admin_status():
             "admin_configured": bool((os.environ.get("ARQUIVO01_ADMIN_KEY", "") or "").strip()),
         }
     )
+
+
+@app.get("/api/admin/products")
+def admin_list_products():
+    err = _require_admin()
+    if err:
+        return err
+    conn = get_db()
+    liberar_reservas_expiradas(conn)
+    rows = conn.execute("SELECT * FROM products ORDER BY created_at DESC").fetchall()
+    conn.close()
+    return jsonify({"products": [product_row_to_api(row) for row in rows]})
 
 
 @app.post("/api/admin/products")
@@ -679,6 +837,7 @@ def admin_create_product():
     color = (payload.get("color") or "—").strip() or "—"
     sizes = (payload.get("sizes") or "P,M,G,GG").strip()
     description = (payload.get("description") or "").strip()
+    stock_by_size = parse_stock_by_size(payload.get("stock_by_size"), sizes)
 
     raw_image_urls = payload.get("image_urls")
     image_urls = []
@@ -698,6 +857,8 @@ def admin_create_product():
         ), 400
     if not name or not category:
         return jsonify({"error": "Preencha nome e categoria."}), 400
+    if stock_total(stock_by_size) <= 0:
+        return jsonify({"error": "Informe estoque por tamanho com quantidade maior que zero."}), 400
     if not image_urls:
         return jsonify({"error": "Informe ao menos 1 URL de imagem."}), 400
 
@@ -727,10 +888,10 @@ def admin_create_product():
         conn.execute(
             """
             INSERT INTO products
-            (id, name, category, price_cents, image_url, image_urls, color, sizes, description, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (id, name, category, price_cents, image_url, image_urls, availability, reserved_order_id, reserved_until, stock_by_size, color, sizes, description, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (pid, name, category, price_cents, image_url, json.dumps(image_urls, ensure_ascii=False), color, sizes, description, now),
+            (pid, name, category, price_cents, image_url, json.dumps(image_urls, ensure_ascii=False), "disponivel", None, None, json.dumps(stock_by_size, ensure_ascii=False), color, sizes, description, now),
         )
         _sync_product_metadata(conn)
         conn.commit()
@@ -854,7 +1015,51 @@ def create_order():
     payment_stored = "mercadopago"
 
     conn = get_db()
+    liberar_reservas_expiradas(conn)
+
+    item_ids = []
+    for item in items:
+        pid = str(item.get("id") or "").strip()
+        if not pid:
+            conn.close()
+            return jsonify({"error": "Item inválido: id ausente."}), 400
+        if pid in item_ids:
+            conn.close()
+            return jsonify({"error": f"Peça repetida no pedido: {pid}."}), 400
+        item_ids.append(pid)
+
+    marks = ",".join(["?"] * len(item_ids))
+    rows_prod = conn.execute(
+        f"SELECT id, availability FROM products WHERE id IN ({marks})",
+        item_ids,
+    ).fetchall()
+    m = {r["id"]: (r["availability"] or "disponivel") for r in rows_prod}
+    missing = [pid for pid in item_ids if pid not in m]
+    if missing:
+        conn.close()
+        return jsonify({"error": f"Peça(s) não encontrada(s): {', '.join(missing)}."}), 404
+    indisponiveis = [pid for pid in item_ids if m.get(pid) != "disponivel"]
+    if indisponiveis:
+        conn.close()
+        return jsonify({"error": f"Peça(s) indisponível(is): {', '.join(indisponiveis)}."}), 409
+
+    # Confere estoque por tamanho
+    for item in items:
+        pid = str(item.get("id") or "").strip()
+        size = str((item.get("tamanho") or item.get("size") or "Único") or "Único").strip()
+        qty = int(item.get("quantidade") or 1)
+        prow = conn.execute("SELECT stock_by_size, sizes FROM products WHERE id = ?", (pid,)).fetchone()
+        if not prow:
+            conn.close()
+            return jsonify({"error": f"Peça {pid} não encontrada."}), 404
+        stock_map = parse_stock_by_size(prow["stock_by_size"], prow["sizes"] or "")
+        disponivel = int(stock_map.get(size, 0))
+        if qty > disponivel:
+            conn.close()
+            return jsonify({"error": f"Estoque insuficiente para {pid} tam. {size}. Disponível: {disponivel}."}), 409
+
     cursor = conn.cursor()
+    agora = datetime.utcnow()
     cursor.execute(
         """
         INSERT INTO orders (
@@ -876,7 +1081,7 @@ def create_order():
             shipping_cents,
             total_cents,
             "aguardando_pagamento",
-            datetime.utcnow().isoformat(),
+            agora.isoformat(),
         ),
     )
     order_id = cursor.lastrowid
@@ -896,6 +1101,46 @@ def create_order():
                 str(tamanho),
             ),
         )
+
+    reservado_ate = (agora + timedelta(minutes=reservation_minutes())).isoformat()
+    for item in items:
+        pid = str(item.get("id") or "").strip()
+        size = str((item.get("tamanho") or item.get("size") or "Único") or "Único").strip()
+        qty = int(item.get("quantidade") or 1)
+
+        prow = conn.execute("SELECT stock_by_size, sizes FROM products WHERE id = ?", (pid,)).fetchone()
+        stock_map = parse_stock_by_size(prow["stock_by_size"], prow["sizes"] or "") if prow else {}
+        if stock_map:
+            atual = int(stock_map.get(size, 0))
+            if qty > atual:
+                conn.execute("UPDATE orders SET status = 'cancelado' WHERE id = ?", (order_id,))
+                conn.commit()
+                conn.close()
+                return jsonify({"error": f"A peça {pid} tam. {size} acabou de ficar indisponível."}), 409
+            stock_map[size] = max(0, atual - qty)
+            conn.execute(
+                "UPDATE products SET stock_by_size = ? WHERE id = ?",
+                (json.dumps(stock_map, ensure_ascii=False), pid),
+            )
+            apply_product_availability_by_stock(conn, pid, stock_map)
+        else:
+            # fallback para peças legadas sem estoque por tamanho
+            cur = conn.execute(
+                """
+                UPDATE products
+                SET availability = 'reservado',
+                    reserved_order_id = ?,
+                    reserved_until = ?
+                WHERE id = ? AND availability = 'disponivel'
+                """,
+                (order_id, reservado_ate, pid),
+            )
+            if cur.rowcount == 0:
+                conn.execute("UPDATE orders SET status = 'cancelado' WHERE id = ?", (order_id,))
+                conn.commit()
+                conn.close()
+                return jsonify({"error": f"A peça {pid} acabou de ficar indisponível. Atualize o carrinho e tente novamente."}), 409
+
     conn.commit()
 
     tot_label = f"R$ {total_cents / 100:.2f}".replace(".", ",")
@@ -973,6 +1218,7 @@ def list_orders():
     limit = max(1, min(limit, 100))
 
     conn = get_db()
+    liberar_reservas_expiradas(conn)
     rows = conn.execute(
         """
         SELECT id, status, total_cents, created_at
