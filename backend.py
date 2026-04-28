@@ -57,6 +57,7 @@ def _ensure_columns(conn):
         ("color", "ALTER TABLE products ADD COLUMN color TEXT"),
         ("sizes", "ALTER TABLE products ADD COLUMN sizes TEXT"),
         ("description", "ALTER TABLE products ADD COLUMN description TEXT"),
+        ("image_urls", "ALTER TABLE products ADD COLUMN image_urls TEXT"),
     ]:
         if name not in pc:
             conn.execute(sql)
@@ -103,6 +104,7 @@ def init_db():
             category TEXT NOT NULL,
             price_cents INTEGER NOT NULL,
             image_url TEXT NOT NULL,
+            image_urls TEXT,
             color TEXT,
             sizes TEXT,
             description TEXT,
@@ -299,13 +301,26 @@ def product_row_to_api(row):
     tamanhos_str = (row["sizes"] or "P,M,G,GG")
     tamanhos = [s.strip() for s in tamanhos_str.split(",") if s.strip()]
     img = row["image_url"]
+
+    imagens = []
+    raw_urls = row["image_urls"] if "image_urls" in row.keys() else None
+    if raw_urls:
+        try:
+            parsed = json.loads(raw_urls)
+            if isinstance(parsed, list):
+                imagens = [str(u).strip() for u in parsed if str(u).strip()]
+        except (json.JSONDecodeError, ValueError, TypeError):
+            imagens = [u.strip() for u in str(raw_urls).split(",") if u.strip()]
+    if not imagens and img:
+        imagens = [img]
+
     return {
         "id": row["id"],
         "nome": row["name"],
         "tipo": row["category"],
         "preco": f"R$ {row['price_cents'] / 100:.2f}".replace(".", ","),
-        "imagem": img,
-        "imagens": [img],
+        "imagem": imagens[0] if imagens else img,
+        "imagens": imagens,
         "cor": row["color"] or "—",
         "tamanhos": tamanhos,
         "descricao": row["description"] or "",
@@ -665,16 +680,33 @@ def admin_create_product():
     sizes = (payload.get("sizes") or "P,M,G,GG").strip()
     description = (payload.get("description") or "").strip()
 
+    raw_image_urls = payload.get("image_urls")
+    image_urls = []
+    if isinstance(raw_image_urls, list):
+        image_urls = [str(u).strip() for u in raw_image_urls if str(u).strip()]
+    elif isinstance(raw_image_urls, str) and raw_image_urls.strip():
+        image_urls = [u.strip() for u in raw_image_urls.split(",") if u.strip()]
+
+    if image_url:
+        image_urls = [image_url, *[u for u in image_urls if u != image_url]]
+
     if not _product_id_ok(pid):
         return jsonify(
             {
                 "error": "ID inválido. Use só letras minúsculas, números e hífens (ex.: vestido-floral-01).",
             }
         ), 400
-    if not name or not category or not image_url:
-        return jsonify({"error": "Preencha nome, categoria e URL da imagem."}), 400
-    if not image_url.startswith("http://") and not image_url.startswith("https://"):
-        return jsonify({"error": "A imagem precisa de uma URL http(s) pública."}), 400
+    if not name or not category:
+        return jsonify({"error": "Preencha nome e categoria."}), 400
+    if not image_urls:
+        return jsonify({"error": "Informe ao menos 1 URL de imagem."}), 400
+
+    for u in image_urls:
+        if not u.startswith("http://") and not u.startswith("https://"):
+            return jsonify({"error": "As imagens precisam de URL http(s) pública."}), 400
+
+    image_urls = image_urls[:3]
+    image_url = image_urls[0]
 
     price_cents = payload.get("price_cents")
     if price_cents is not None:
@@ -695,10 +727,10 @@ def admin_create_product():
         conn.execute(
             """
             INSERT INTO products
-            (id, name, category, price_cents, image_url, color, sizes, description, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (id, name, category, price_cents, image_url, image_urls, color, sizes, description, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (pid, name, category, price_cents, image_url, color, sizes, description, now),
+            (pid, name, category, price_cents, image_url, json.dumps(image_urls, ensure_ascii=False), color, sizes, description, now),
         )
         _sync_product_metadata(conn)
         conn.commit()

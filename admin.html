@@ -125,15 +125,20 @@
           <option value="Blazer"></option>
           <option value="Suéter"></option>
           <option value="Acessório"></option>
+          <option value="Lingerie"></option>
         </datalist>
 
         <span class="sub">Preço e fotos</span>
         <label for="peca-preco">Preço (R$)</label>
         <input id="peca-preco" inputmode="decimal" required placeholder="89,90" />
 
-        <label for="peca-url">URL da imagem (https)</label>
+        <label for="peca-url">URL da imagem 1 (principal)</label>
         <input id="peca-url" type="url" required placeholder="https://…" />
-        <p class="admin-hint">Pode ser link direto (Cloudinary, etc.) ou arquivo no site, ex.: <code>/fotos/nome.jpg</code> (subir no Git e usar a URL completa do Render).</p>
+        <label for="peca-url-2">URL da imagem 2 (opcional)</label>
+        <input id="peca-url-2" type="url" placeholder="https://…" />
+        <label for="peca-url-3">URL da imagem 3 (opcional)</label>
+        <input id="peca-url-3" type="url" placeholder="https://…" />
+        <p class="admin-hint">Use ate 3 fotos. Pode ser link direto (Cloudinary, etc.) ou arquivo no site, ex.: <code>/fotos/nome.jpg</code> (subir no Git e usar a URL completa do Render).</p>
 
         <span class="sub">Detalhes</span>
         <label for="peca-cor">Cor</label>
@@ -294,17 +299,28 @@
           setMsgForm("Preço inválido. Use ex.: 89,90", true);
           return;
         }
-        const imageUrl = (document.getElementById("peca-url").value || "").trim();
-        if (!/^https?:\/\//i.test(imageUrl) && !imageUrl.startsWith("/")) {
-          setMsgForm("A imagem precisa de URL completa (https://...) ou caminho a partir da raiz (/fotos/... com domínio no ar).", true);
+        const imageFields = ["peca-url", "peca-url-2", "peca-url-3"];
+        const imageUrls = imageFields
+          .map((fid) => (document.getElementById(fid).value || "").trim())
+          .filter(Boolean)
+          .map((u) => (u.startsWith("/") ? window.location.origin + u : u));
+
+        if (!imageUrls.length) {
+          setMsgForm("Informe ao menos a URL da imagem principal.", true);
           return;
         }
-        const absUrl = imageUrl.startsWith("/") ? window.location.origin + imageUrl : imageUrl;
+        const bad = imageUrls.find((u) => !/^https?:\/\//i.test(u));
+        if (bad) {
+          setMsgForm("Todas as imagens precisam ser URL completa (https://...) ou caminho /fotos/...", true);
+          return;
+        }
+
         const body = {
           id,
           name: (document.getElementById("peca-nome").value || "").trim(),
           category: (document.getElementById("peca-categoria").value || "").trim(),
-          image_url: absUrl,
+          image_url: imageUrls[0],
+          image_urls: imageUrls,
           color: (document.getElementById("peca-cor").value || "").trim() || "—",
           sizes: (document.getElementById("peca-tams").value || "P,M,G,GG").trim(),
           description: (document.getElementById("peca-desc").value || "").trim(),

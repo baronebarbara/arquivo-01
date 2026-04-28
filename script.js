@@ -137,10 +137,10 @@ async function carregarProdutosDoBanco() {
     if (Array.isArray(data.products) && data.products.length) {
       produtos = data.products.map(normalizarProduto);
     } else {
-      produtos = produtoFallback();
+      produtos = [];
     }
   } catch {
-    produtos = produtoFallback();
+    produtos = [];
   }
 }
 
@@ -501,7 +501,7 @@ async function iniciarPaginaProduto() {
     produtos = produtos.map((p) => (p.id === produto.id ? produto : p));
     if (!produtos.find((p) => p.id === produto.id)) produtos.push(produto);
   } catch {
-    produto = normalizarProduto(produtoFallback().find((p) => p.id === id) || null);
+    produto = null;
   }
   if (!produto) {
     if (elErro) {
